@@ -29,7 +29,7 @@ if use_postgresql:
   pg_cursor.execute("CREATE TABLE IF NOT EXISTS ilceler (ilce_id integer PRIMARY KEY, ilce_adi varchar, il_id integer, il_adi varchar);")
   pg_cursor.execute("CREATE TABLE IF NOT EXISTS mahalleler (mahalle_id integer PRIMARY KEY, mahalle_adi varchar, ilce_id integer, ilce_adi varchar, il_id integer, il_adi varchar);")
   pg_cursor.execute("CREATE TABLE IF NOT EXISTS sokaklar (sokak_id integer PRIMARY KEY, sokak_adi varchar,mahalle_id integer, mahalle_adi varchar, ilce_id integer, ilce_adi varchar, il_id integer, il_adi varchar);")
-  
+
   # Truncate old data IF EXISTS
   pg_cursor.execute("TRUNCATE TABLE iller;")
   pg_cursor.execute("TRUNCATE TABLE ilceler;")
@@ -60,34 +60,34 @@ if use_sqlite:
   sqlite_connection.commit()
 
   # Create Tables 
-  
+
   sqlite_cursor.execute('''CREATE TABLE IF NOT EXISTS iller (il_id integer PRIMARY KEY, il_adi text)''')
   sqlite_cursor.execute('''CREATE TABLE IF NOT EXISTS ilceler (ilce_id integer PRIMARY KEY, ilce_adi text, il_id integer, il_adi text)''')
   sqlite_cursor.execute('''CREATE TABLE IF NOT EXISTS mahalleler (mahalle_id integer PRIMARY KEY, mahalle_adi text, ilce_id integer, ilce_adi text, il_id integer, il_adi text)''')
   sqlite_cursor.execute('''CREATE TABLE IF NOT EXISTS sokaklar (sokak_id interger PRIMARY KEY, sokak_adi text, mahalle_id integer, mahalle_adi text, ilce_id integer, ilce_adi text, il_id integer, il_adi text)''')
   sqlite_connection.commit()
 
-  
+
 
 # Add iller to database
 executemany_list= []
 with open("iller.txt") as file:
-    for iller in file:
-        iller_list = json.loads(iller)
-        print("Eklenecek İl Sayısı: " + str(len(iller_list)))
-        for il in iller_list:
-          il_id = il['il_id']
-          il_adi = il['il_adi']
-          executemany_list.append((il_id, il_adi))
-          
-          # Add one by one to mongo
-          if use_mongodb:
-            mongodb.iller.insert_one(
-              { "_id": il_id },
-              {
-                "$setOnInsert": {"il_adi": il_adi}
-              }
-            )      
+  for iller in file:
+    iller_list = json.loads(iller)
+    print(f"Eklenecek İl Sayısı: {len(iller_list)}")
+    for il in iller_list:
+      il_id = il['il_id']
+      il_adi = il['il_adi']
+      executemany_list.append((il_id, il_adi))
+
+      # Add one by one to mongo
+      if use_mongodb:
+        mongodb.iller.insert_one(
+          { "_id": il_id },
+          {
+            "$setOnInsert": {"il_adi": il_adi}
+          }
+        )
 stmt = "INSERT INTO iller (il_id, il_adi) VALUES (%s, %s)"
 
 
@@ -123,7 +123,7 @@ with open("ilceler.txt") as file:
               }
             )
           print(len(executemany_list))
-            
+
 stmt = "INSERT INTO ilceler (ilce_id, ilce_adi, il_id, il_adi) VALUES (%s, %s, %s, %s)"
 print(len(executemany_list))
 if use_mariadb:
@@ -174,7 +174,7 @@ if use_sqlite:
   sqlite_connection.commit()
   print("Adding mahalleler to Sqlite is Done!")
 
-  
+
 # Add sokaklar to database
 executemany_list= []
 with open("sokaklar.txt") as file:
@@ -214,28 +214,25 @@ if use_sqlite:
   sqlite_connection.commit()
   print("Adding sokaklar to Sqlite is Done!")
 
-  
+
 
 
 
 
 # Close DB Connections
-if use_mariadb:
-  if(mdb_connection):
-    mdb_cursor.close()
-    mdb_connection.close()
-    print("MariaDB / MySQL connection is closed")
+if use_mariadb and mdb_connection:
+  mdb_cursor.close()
+  mdb_connection.close()
+  print("MariaDB / MySQL connection is closed")
 
-if use_postgresql:
-  if(pg_connection):
-    pg_cursor.close()
-    pg_connection.close()
-    print("PostgreSQL connection is closed")
+if use_postgresql and pg_connection:
+  pg_cursor.close()
+  pg_connection.close()
+  print("PostgreSQL connection is closed")
 
-if use_sqlite:
-  if(sqlite_connection):
-    sqlite_connection.close()
-    print("Sqlite connection is closed")
+if use_sqlite and sqlite_connection:
+  sqlite_connection.close()
+  print("Sqlite connection is closed")
 
 
 
